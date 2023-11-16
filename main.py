@@ -1,31 +1,39 @@
-from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox
-from OCC.Extend.DataExchange import write_step_file, read_step_file
-from OCC.Core.STEPControl import STEPControl_Reader
+import os
+from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox, BRepPrimAPI_MakeTorus
+from OCC.Extend.DataExchange import write_stl_file, read_stl_file
 from OCC.Display.SimpleGui import init_display
 
 # Inicjalizacja wyświetlania
 display, start_display, add_menu, add_function_to_menu = init_display()
 
-# Tworzenie pudełka
+# ustawienie folderu do eksportu obiektów
+stl_output_dir = os.path.abspath(os.path.join("assets", "models"))
+
+# Tworzenie obiektów
 box = BRepPrimAPI_MakeBox(10, 20, 30).Shape()
+my_torus = BRepPrimAPI_MakeTorus(20.0, 10.0).Shape()
 
-# Zapisywanie pudełka do pliku w formacie data przy pomocy step
-output_step_file = "box.data"
-write_step_file(box, output_step_file)
+# sprawdzenie sciezki
+if not os.path.isdir(stl_output_dir):
+    raise AssertionError("wrong path provided")
 
-# Wczytywanie pudełka z pliku STEP
-reader = STEPControl_Reader()
-reader.ReadFile(output_step_file)
-reader.TransferRoots()
+# ustawienie nazwy dla pliku
+stl_file_torus = os.path.join(stl_output_dir, "torus.stl")
 
-# Pobieranie wczytanego obiektu
-loaded_box = reader.OneShape()
+# eskport do pliku
+write_stl_file(
+    my_torus,
+    stl_file_torus,
+    mode="binary",
+    linear_deflection=0.5,
+    angular_deflection=0.3,
+)
 
-# Wyświetlenie oryginalnego pudełka
-display.DisplayShape(box)
+# Wczytywanie STL
+stl_torus = read_stl_file(stl_file_torus)
 
 # Wyświetlenie wczytanego pudełka
-display.DisplayShape(loaded_box, color="RED")
+display.DisplayShape(stl_torus, update=True, color="RED")
 
 # Uruchomienie interaktywnego widoku
 start_display()
