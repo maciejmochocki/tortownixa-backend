@@ -44,12 +44,31 @@ scene.export_to_stl(stl_output)
 #start_display()
 
 class MainHandler(tornado.web.RequestHandler):
+    def set_default_headers(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header("Access-Control-Allow-Headers", "x-requested-with")
+        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+        
+    def options(self, *args):
+        self.set_status(204)
+        self.finish()
+        
     def get(self):
         self.write("Hello, world2")
 class AddLayerHandler(tornado.web.RequestHandler):
+    def set_default_headers(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header("Access-Control-Allow-Headers", "x-requested-with")
+        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+        
+    def options(self, *args):
+        self.set_status(204)
+        self.finish()
+        
     def get(self):
         encodedModel = scene.export_to_stl_base64()
         response = {"sceneModel": encodedModel}
+        print("Request captured!")
         self.write(response)
 def make_app():
     return tornado.web.Application([
