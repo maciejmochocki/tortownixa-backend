@@ -2,6 +2,7 @@ import os
 import SceneModule as scene
 import tornado.ioloop
 import tornado.web
+import json
 
 from OCC.Core.BRep import BRep_Builder
 from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox, BRepPrimAPI_MakeTorus
@@ -65,10 +66,32 @@ class AddLayerHandler(tornado.web.RequestHandler):
         self.set_status(204)
         self.finish()
         
-    def get(self):
-        encodedModel = scene.export_to_stl_base64()
-        response = {"sceneModel": encodedModel}
-        print("Request captured!")
+    def post(self):
+        # Odbierz dane JSON z parametrami
+        data = json.loads(self.request.body.decode('utf-8'))
+
+        # Pobierz parametry z danych
+        width = data.get('width', 10)
+        height = data.get('height', 20)
+        length = data.get('length', 30)
+        radius1 = data.get('radius1', 20.0)
+        radius2 = data.get('radius2', 10.0)
+
+        # Modyfikuj obiekty box i my_torus
+        box = BRepPrimAPI_MakeBox(width, height, length).Shape()
+        my_torus = BRepPrimAPI_MakeTorus(radius1, radius2).Shape()
+
+        # Dodaj obiekty do sceny
+        scene.add_object(box)
+        scene.add_object(my_torus)
+
+        # Zapisz zmienioną scenę do pliku STL
+        stl_output = "assets/models/scene_modified.stl"
+        scene.export_to_stl(stl_output)
+
+        # Odpowiedź z zakodowanym modelem
+        encoded_model = scene.export_to_stl_base64()
+        response = {"sceneModel": encoded_model}
         self.write(response)
 def make_app():
     return tornado.web.Application([
