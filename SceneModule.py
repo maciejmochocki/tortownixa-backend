@@ -1,4 +1,5 @@
 import os
+import base64
 
 from OCC.Core.BRep import BRep_Builder
 from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox, BRepPrimAPI_MakeTorus
@@ -28,3 +29,20 @@ class Scene:
 
         # Zapisz do pliku STL
         write_stl_file(compound, path, mode="binary", linear_deflection=0.5, angular_deflection=0.3)
+    
+    def export_to_stl_base64(self):
+        path = "assets/models/tmp.stl"
+        compound = TopoDS_Compound()
+        BRep_Builder().MakeCompound(compound)
+
+        # dodaj wszystkie obiekty na scenie
+        for obj in self.objects:
+            BRep_Builder().Add(compound, obj)
+
+        # Zapisz do pliku STL
+        write_stl_file(compound, path, mode="binary", linear_deflection=0.5, angular_deflection=0.3)
+
+        file_text = open(path, 'rb')
+        file_read = file_text.read()
+        file_encode = base64.encodebytes(file_read).decode('ascii')
+        return file_encode
